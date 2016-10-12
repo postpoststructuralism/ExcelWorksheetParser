@@ -1,0 +1,88 @@
+Sub btnProcessData_Click()
+    PopulateSubSheets
+End Sub
+
+Sub PopulateSubSheets()
+    Dim SourceSheet As Worksheet, DestinationSheet As Worksheet
+    Dim SourceRange As Range
+    Dim firstRow As Integer, firstColumn As Integer, lastRow As Integer, lastColumn As Integer
+    Dim rowCnt, copiedCnt As Integer
+    Dim sheetTypeIndex As Integer
+    Dim destRow As Integer
+    Dim sheetName As String
+    
+    Set SourceSheet = Worksheets("Master Data")
+    
+    sheetTypeIndex = 27 ' this is the column that holds the name of the destination sheet
+    
+    ' define shape of master data
+    firstRow = GetFirstRow(SourceSheet, sheetTypeIndex, 1)
+    firstColumn = GetFirstColumn(SourceSheet)
+    lastRow = GetLastRow(SourceSheet)
+    lastColumn = GetLastColumn(SourceSheet)
+    
+    Set SourceRange = SourceSheet.Cells(firstRow, firstColumn).Resize(lastRow, firstColumn)
+    rowCnt = 1
+    copiedCnt = 1
+    
+    ' clear existing data
+    For Each Sheet In Worksheets
+        If Sheet.Name <> "Master Data" And Sheet.Name <> "Controller" Then
+            Sheet.UsedRange.ClearContents
+        End If
+        
+    Next
+    
+    For Each Item In SourceRange
+        sheetName = SourceSheet.Cells(rowCnt, sheetTypeIndex).Value
+        If SourceSheet.Cells(rowCnt, sheetTypeIndex).Value <> "" Then
+            destRow = Worksheets(sheetName).Cells(Rows.Count, 1).End(xlUp).row
+            Worksheets(sheetName).Range("A" & destRow & ":Z" & destRow).Offset(1, 0).Value = SourceSheet.Range("A" & rowCnt & ":Z" & rowCnt).Value
+            copiedCnt = copiedCnt + 1
+        End If
+        rowCnt = rowCnt + 1
+    Next
+
+    Application.CutCopyMode = False
+    
+    MsgBox ("Finished. " & copiedCnt - 1 & " rows copied.")
+End Sub
+
+Function GetFirstRow(ByRef SourceSheet As Worksheet, columnIndex As Integer, initialRow As Integer) As Integer
+    Dim firstRow, lastRow, i As Integer
+    firstRow = 1
+    
+    GetFirstRow = firstRow
+End Function
+
+Function GetFirstColumn(ByRef SourceSheet As Worksheet) As Integer
+    Dim firstColumn As Integer
+    firstColumn = 1
+
+    GetFirstColumn = firstColumn
+End Function
+
+Function GetLastRow(ByRef SourceSheet As Worksheet) As Integer
+    Dim lastRow As Integer
+    lastRow = SourceSheet.Cells(Rows.Count, 1).End(xlUp).row
+
+    GetLastRow = lastRow
+End Function
+
+Function GetLastColumn(ByRef SourceSheet As Worksheet) As Integer
+    Dim lastColumn As Integer
+    lastColumn = SourceSheet.Cells(1, Columns.Count).End(xlToLeft).Column
+
+    GetLastColumn = lastColumn
+End Function
+
+Function ValidateCoordinates(firstRow As Integer, firstColumn As Integer, lastRow As Integer, lastColumn As Integer) As Integer
+    Dim retVal As Integer
+    retVal = 0
+    
+    If firstRow <= 0 Or firstColumn <= 0 Or lastRow <= 0 Or lastColumn <= 0 Then
+        retVal = -1
+    End If
+    
+    ValidateCoordinates = retVal
+End Function
